@@ -448,8 +448,11 @@ trait Converter
 
         $date = $keepOffset ? $this : $this->avoidMutation()->utc();
 
-        if ($this->year < 0 || $this->year > 9999) {
-            return $date->isoFormat('YYYYYY-MM-DD[T]HH:mm:ss.SSSSSS'.($keepOffset ? 'Z' : '[Z]'));
+        // Customized ISO units keep going through isoFormat() so subclasses keep their output
+        if ($this->year < 0 || $this->year > 9999 || static::getIsoUnits() !== self::getIsoUnits()) {
+            $yearFormat = $this->year < 0 || $this->year > 9999 ? 'YYYYYY' : 'YYYY';
+
+            return $date->isoFormat("$yearFormat-MM-DD[T]HH:mm:ss.SSSSSS".($keepOffset ? 'Z' : '[Z]'));
         }
 
         // Same output as isoFormat('YYYY-MM-DD[T]HH:mm:ss.SSSSSSZ'), without parsing the format on every call.
