@@ -64,6 +64,20 @@ class StringsTest extends AbstractTestCase
         $this->assertNull($d->toISOString());
     }
 
+    public function testToISOStringWithCustomizedIsoUnits()
+    {
+        $d = BadIsoCarbon::create(1975, 12, 25, 14, 15, 16);
+        $this->assertSame('YYYY-MM-DDTHH:mm:ss.SSSSSSZ', $d->toISOString());
+        $d = new class('1975-12-25 14:15:16') extends Carbon {
+            public static function getIsoUnits(): array
+            {
+                return ['DD' => static fn (CarbonInterface $date) => 'D'.$date->day] + parent::getIsoUnits();
+            }
+        };
+        $this->assertSame('1975-12-D25T19:15:16.000000Z', $d->toISOString());
+        $this->assertSame('1975-12-D25T14:15:16.000000-05:00', $d->toISOString(true));
+    }
+
     public function testSetToStringFormatString()
     {
         Carbon::setToStringFormat('jS \o\f F, Y g:i:s a');
